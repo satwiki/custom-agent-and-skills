@@ -1,12 +1,12 @@
 # custom-agent-and-skills
 
-A starter collection of reusable custom agent instructions and GitHub Copilot Skills.
+Satwiki's collection of reusable GitHub Copilot custom agent and Skills.
 
 ## What's included
 
 - Repository-wide Copilot instructions: `.github/copilot-instructions.md`
 - Path-specific instruction example: `.github/instructions/agents.instructions.md`
-- Reusable custom agent instruction examples in `agents/`
+- Reusable custom agent instruction examples in `.github/agents/`
 - Reusable Skill definitions in `.github/skills/*/SKILL.md`
 
 ## Structure
@@ -17,17 +17,15 @@ A starter collection of reusable custom agent instructions and GitHub Copilot Sk
   instructions/
     agents.instructions.md
   skills/
-    repo-onboarding/
-      SKILL.md
     release-notes/
       SKILL.md
-agents/
-  code-review-agent.md
-  issue-triage-agent.md
+  agents/
+    code-review-agent.md
+    issue-triage-agent.md
 ```
 
 ## Usage
 
-1. Copy these files into your own repository.
-2. Customize the instruction text for your team and project.
-3. Open Copilot Chat/Agent mode in GitHub or your IDE and reference these agents/skills by name.
+1. Copy these files into your own repository. Follow the same folder structure to make sure Copilot finds these.
+2. Customize the instruction text for your team and project as needed.
+3. Open Copilot Agent mode or Copilot CLI in GitHub or your IDE. Select the specific agent from the dropdown, or select skill by using `/`.
