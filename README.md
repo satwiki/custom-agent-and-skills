@@ -5,7 +5,6 @@ Satwiki's collection of reusable GitHub Copilot custom agent and Skills.
 ## What's included
 
 - Repository-wide Copilot instructions: `.github/copilot-instructions.md`
-- Path-specific instruction example: `.github/instructions/agents.instructions.md`
 - Reusable custom agent instruction examples in `.github/agents/`
 - Reusable Skill definitions in `.github/skills/*/SKILL.md`
 
@@ -14,14 +13,11 @@ Satwiki's collection of reusable GitHub Copilot custom agent and Skills.
 ```text
 .github/
   copilot-instructions.md
-  instructions/
-    agents.instructions.md
   skills/
     release-notes/
       SKILL.md
   agents/
     code-review-agent.md
-    issue-triage-agent.md
 ```
 
 ## Usage
