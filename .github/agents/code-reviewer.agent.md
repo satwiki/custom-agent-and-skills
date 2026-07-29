@@ -87,6 +87,15 @@ Flag:
 - Missing edge case tests
 - Insufficient test coverage for async flows, retries, and error handling
 
+8. Observability & Logging
+- Ensure sufficient logging for critical paths
+- Ensure logs are structured and meaningful
+
+Flag:
+- PII data leakage in logs
+
+9. Do not commit any code fix to the repository. Always provide a detailed review with actionable feedback.
+
 ## Output Format
 
 Structure your review EXACTLY as follows:
