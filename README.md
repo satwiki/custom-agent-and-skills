@@ -1,22 +1,24 @@
-# custom-agent-and-skills
+# Custom Agents and Skills for your Development Workflow
 
-Satwiki's collection of reusable GitHub Copilot custom agent and Skills.
+Reusable and Extensible custom agents and skills for development and code review tasks, compatible with GitHub Copilot.
+
 
 ## What's included
 
-- Repository-wide Copilot instructions: `.github/copilot-instructions.md`
-- Reusable custom agent instruction examples in `.github/agents/`
-- Reusable Skill definitions in `.github/skills/*/SKILL.md`
+- Reusable custom agent instruction examples in [`.github/agents/`](.github/agents/)
+- Reusable Skill definitions in [`.github/skills/`](.github/skills/)
 
-## Structure
+
+## Currently Available
 
 ```text
 .github/
-  copilot-instructions.md
   skills/
     release-notes/
       SKILL.md
     repo-visualizer/
+      SKILL.md
+    security-first/
       SKILL.md
   agents/
     code-review-agent.md
@@ -35,3 +37,28 @@ Satwiki's collection of reusable GitHub Copilot custom agent and Skills.
 
 ### Repo visualizer
 1. Open CLI or chat window and prompt: `/implementation-visualizer Create a diagram for payment processing flow.`
+
+### Security First
+
+Use the [security-first skill](.github/skills/security-first/SKILL.md)
+during implementation or a general code/security review. It covers APIs,
+services, databases, caches, cloud resources, untrusted input, secrets, PII,
+uploads, third-party dependencies, webhooks, and AI prompt injection.
+
+- Run `/security-first Review my recent changes.` for staged, unstaged,
+  and relevant untracked code, or specify `base=origin/main` for a branch review.
+- Run `/security-first scope=repo Review repository security.` for a
+  repository-wide review rather than the default changed-code scope.
+- During implementation, request `/security-first mode=implement` with the
+  feature description. The skill applies compatible secure defaults within the
+  task and asks before authentication, privacy, or API-contract changes.
+- Reviews are read-only until you approve fixes. The
+  [code-reviewer agent](.github/agents/code-reviewer.agent.md) also applies this
+  skill's security checks while retaining its broader review format.
+
+The skill embeds OWASP Top 10:2025 checks in five security guidelines and
+includes Presidio-based de-identification before PII storage or external
+transfer, with explicit approval for necessary identity retention. It does
+not require online reference loading, installs Presidio to verify automated PII detection finds every sensitive value.
+Skill discovery depends on the coding agent. However you can explicitly
+invoke it as needed.
