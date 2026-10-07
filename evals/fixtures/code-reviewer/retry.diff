@@ -1,0 +1,13 @@
+diff --git a/retry.py b/retry.py
+new file mode 100644
+--- /dev/null
++++ b/retry.py
+@@ -0,0 +1,8 @@
++async def charge_with_retry(charge):
++    attempts = 0
++    while attempts < 3:
++        try:
++            return await charge()
++        except Exception:
++            continue
++    raise RuntimeError("Retry budget exhausted")

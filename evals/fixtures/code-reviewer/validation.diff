@@ -1,0 +1,27 @@
+diff --git a/quantity.py b/quantity.py
+new file mode 100644
+--- /dev/null
++++ b/quantity.py
+@@ -0,0 +1,5 @@
++def validate_quantity(value):
++    if type(value) is not int or value < 1 or value > 100:
++        raise ValueError("quantity must be an integer from 1 to 100")
++    return value
+diff --git a/test_quantity.py b/test_quantity.py
+new file mode 100644
+--- /dev/null
++++ b/test_quantity.py
+@@ -0,0 +1,13 @@
++import pytest
++from quantity import validate_quantity
++
++
++def test_valid_boundaries():
++    for value in (1, 50, 100):
++        assert validate_quantity(value) == value
++
++
++def test_invalid_values():
++    for value in (0, 101, -1, 1.5, float("nan"), float("inf"), "2", None, True):
++        with pytest.raises(ValueError):
++            validate_quantity(value)

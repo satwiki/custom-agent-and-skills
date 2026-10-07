@@ -1,0 +1,13 @@
+diff --git a/workflow.py b/workflow.py
+new file mode 100644
+--- /dev/null
++++ b/workflow.py
+@@ -0,0 +1,8 @@
++async def execute(state, search, save):
++    while state.step != "done":
++        if state.step == "search":
++            state.results = await search(state.query)
++            state.step = "search"
++        elif state.step == "save":
++            await save(state.results)
++            state.step = "done"
