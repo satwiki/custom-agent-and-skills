@@ -4,11 +4,12 @@
       "name": "release-notes",
       "kind": "skill",
       "artifact": ".github/skills/release-notes/SKILL.md",
+      "judge_notes": "A pull request exists only if its number appears in the supplied files. An answer may omit PR numbers entirely; omission is not invention. Judge ordering by the order of sections or bullets in the answer.",
       "cases": [
         {
           "id": "release-notes-group-breaking-then-features-fixes",
           "prompt": "Draft concise user-facing release notes for version 2.0 from the supplied merged pull requests.",
-          "expected": "Breaking changes first, then feature/fix/maintenance groups, with factual descriptions.",
+          "expected": "Breaking changes first, then feature/fix/maintenance groups, with factual descriptions. Only PRs #101 (CSV export, feature), #102 (duplicate invoice email fix), #103 (dev dependency refresh, maintenance), and #104 (breaking: /v1/export replaced by /v2/exports) exist.",
           "files": ["merged-prs.json"],
           "heuristics": [
             {
@@ -21,13 +22,13 @@
             "Breaking changes appear before features, fixes, and maintenance",
             "Describes the CSV export capability from the merged pull requests",
             "Describes the duplicate-email invoice fix factually",
-            "Does not invent pull requests that are not in the input"
+            "Mentions no pull request numbers other than #101, #102, #103, and #104"
           ]
         },
         {
           "id": "release-notes-announce-export-api-migration",
           "prompt": "I'm upgrading to 2.0. Write the release announcement from the merged PRs, including what existing API consumers need to change.",
-          "expected": "Lead with the breaking export change, spell out endpoint and field migration, preserve API token validity.",
+          "expected": "Lead with the breaking export change from PR #104: /v1/export is removed, clients use /v2/exports, the query field format is renamed to file_type, and existing API tokens remain valid. Then mention CSV export (#101) and the duplicate-email fix (#102).",
           "files": ["merged-prs.json"],
           "rubric": [
             "Explains that consumers must migrate from /v1/export to /v2/exports",
@@ -55,23 +56,24 @@
       "name": "repo-visualizer",
       "kind": "skill",
       "artifact": ".github/skills/repo-visualizer/SKILL.md",
+      "judge_notes": "Count diagrams by fenced Mermaid code blocks. A subgraph inside one Mermaid block, including a Legend subgraph, is part of that diagram and is not a separate diagram. A legend may be a Legend subgraph or a visible key list next to the diagram. Functions, objects, and endpoints that appear in flows.py (submit_order, fulfill_order, register_worker, inventory_report, fetch_payment, store, queue, order.paid, payments.example.invalid) are not invented. A line reference may be a single line or a range that matches flows.py.",
       "cases": [
         {
           "id": "repo-visualizer-fulfill-order-linear-flow",
           "prompt": "Visualize only fulfill_order, from consuming a paid-order message to marking the order shipped. Include repository evidence.",
-          "expected": "One flowchart showing order lookup and shipment update, with legend and source evidence.",
+          "expected": "One flowchart showing order lookup and shipment update, with legend and source evidence. In flows.py, register_worker subscribes to order.paid at lines 32-33, fulfill_order spans lines 26-29, store.get_order is line 27, and store.mark_shipped is line 28.",
           "files": ["flows.py"],
           "rubric": [
-            "Shows a single fulfill_order flowchart rather than several unrelated diagrams",
+            "Shows fulfill_order in a single Mermaid flowchart",
             "Describes looking up the order and marking it shipped",
             "Includes a legend",
-            "Cites flows.py with a line number as evidence"
+            "Cites flows.py with a line number or line range as evidence"
           ]
         },
         {
           "id": "repo-visualizer-submit-order-failure-paths",
           "prompt": "Diagram submit_order and its downstream fulfillment as one end-to-end flow, including failure paths and observed protocols.",
-          "expected": "Connected payment/publication/fulfillment flow, invalid/declined/failed outcomes, bounded retry, HTTP POST, and unknown broker transport disclosed.",
+          "expected": "Connected payment/publication/fulfillment flow, invalid/declined/failed outcomes, bounded retry, HTTP POST, and unknown broker transport disclosed. In flows.py: empty items return invalid (lines 2-3); the loop allows two attempts (line 4); HTTP POST to the payment endpoint (lines 6-13); a first-attempt 503 retries (lines 14-15); a non-ok response returns declined (lines 16-17); publish order.paid (line 19); a second-attempt exception returns failed (lines 21-23); register_worker subscribes to order.paid and calls fulfill_order (line 33). The queue transport is not specified anywhere.",
           "files": ["flows.py"],
           "rubric": [
             "Shows one connected end-to-end flow rather than disconnected snippets",
@@ -83,7 +85,7 @@
         {
           "id": "repo-visualizer-independent-submit-vs-inventory",
           "prompt": "Visualize submit_order and inventory_report at overview detail. Show whether these two workflows depend on each other.",
-          "expected": "Two diagrams because a shared store does not create a runtime dependency; no invented provider or protocol.",
+          "expected": "Two diagrams because a shared store does not create a runtime dependency; no invented provider or protocol. flows.py uses only a generic fetch_payment function, a generic queue, and a generic store; it names no payment vendor, broker product, or RPC framework.",
           "files": ["flows.py"],
           "heuristics": [
             {
@@ -95,7 +97,7 @@
           "rubric": [
             "Treats submit_order and inventory_report as independent workflows",
             "Covers inventory or stock reporting",
-            "Does not invent a payment, broker, or RPC provider that is not in the source",
+            "Does not name a payment vendor, broker product, or RPC protocol that is absent from flows.py",
             "Includes a legend"
           ]
         }
@@ -105,23 +107,24 @@
       "name": "security-first",
       "kind": "skill",
       "artifact": ".github/skills/security-first/SKILL.md",
+      "judge_notes": "The task forbids editing code, so a concrete recommended remediation (for example parameterized queries or bound parameters) satisfies a fix item; the answer need not show edited code. A line citation may be a single line or a range and must match the supplied file. Do not require findings outside the requested scope.",
       "cases": [
         {
           "id": "security-first-api-sql-injection-and-pii",
           "prompt": "Review only the supplied api.py for security issues. This is an explicit-file review, not a branch diff. Do not edit code.",
-          "expected": "Identify SQL injection, missing invoice ownership/tenant authorization, and raw profile logging/egress; give evidence and remediation.",
+          "expected": "Identify SQL injection, missing invoice ownership/tenant authorization, and raw profile logging/egress; give evidence and remediation. In api.py: request.params.id is interpolated into SQL at line 4 and executed at line 5; read_invoice (lines 1-6) checks only authentication, not invoice ownership or tenant; the raw request body is logged at line 12 and sent to the exporter at line 13.",
           "files": ["api.py"],
           "rubric": [
-            "Identifies SQL injection with evidence and a parameterized-query fix",
+            "Identifies SQL injection with evidence and recommends parameterized queries or bound parameters",
             "Identifies missing invoice ownership or tenant authorization",
             "Identifies raw profile logging or PII egress",
-            "Cites api.py line numbers and mentions how to verify the fix"
+            "Cites api.py line numbers and gives a verification step for a fix"
           ]
         },
         {
           "id": "security-first-safe-api-no-false-positives",
           "prompt": "Review only safe-api.py for confirmed authorization and SQL injection defects. The fixture contract comments describe guaranteed behavior. Distinguish missing evidence from confirmed vulnerabilities; do not edit code.",
-          "expected": "Do not falsely flag inline absence of authentication or parameterization. State no confirmed findings within this scope, with limitations.",
+          "expected": "Do not falsely flag inline absence of authentication or parameterization. State no confirmed findings within this scope, with limitations. In safe-api.py: the id is validated at line 7, find_invoice filters by id, tenant_id, and owner_id at lines 9-15, and the contract comments at lines 21-23 guarantee authentication and parameterization.",
           "files": ["safe-api.py"],
           "rubric": [
             "States there are no confirmed findings in this scoped file",
@@ -156,26 +159,27 @@
       "name": "code-reviewer",
       "kind": "agent",
       "artifact": ".github/agents/code-reviewer.agent.md",
+      "judge_notes": "The agent's required four review sections are, in order: 'Critical Issues (Must Fix)', 'Important Improvements', 'Security Risks', and 'Minor Suggestions'. Numbered or differently formatted headings with these names count; a section may state that it has no items. Supplied files are diffs: the line numbers shown to you are diff-file lines, while answers cite source-file lines (the position within the new file's hunk, starting at 1). Accept [File:Line] tags or line ranges that match the source lines given in 'What success looks like'.",
       "cases": [
         {
           "id": "code-reviewer-retry-counter-never-advances",
           "prompt": "Review the supplied retry.diff. Focus on actionable defects in this change. No other repository context is available. Do not edit or commit anything.",
-          "expected": "Find the retry counter that never advances, explain unbounded retries and propose bounded retry tests, in the agent's four sections.",
+          "expected": "Find the retry counter that never advances, explain unbounded retries, and flag missing tests for retry exhaustion, in the agent's four sections. In retry.py: attempts is set to 0 at line 2, the loop condition is at line 3, and the except branch at lines 6-7 continues without incrementing attempts, so line 8 is unreachable while charge keeps failing.",
           "files": ["retry.diff"],
           "rubric": [
-            "Uses the four review sections from the agent instructions",
+            "Uses the four sections: Critical Issues (Must Fix), Important Improvements, Security Risks, Minor Suggestions",
             "Finds that the retry counter never advances",
             "Explains that retries are unbounded",
-            "Proposes tests for bounded retry or exhaustion"
+            "Flags missing tests for retry exhaustion or proposes such tests"
           ]
         },
         {
           "id": "code-reviewer-workflow-self-loop-invalid-state",
           "prompt": "Review workflow.diff. The caller initializes state.step to search. Focus on state transitions and failure behavior. Do not modify code.",
-          "expected": "Identify self-loop preventing save and unknown-state busy loop; suggest transitions and rejection of invalid states, with four sections.",
+          "expected": "Identify self-loop preventing save and unknown-state busy loop; suggest transitions and rejection of invalid states, with four sections. In workflow.py: the search branch sets state.step back to search at line 5, so the save branch at lines 6-8 is never reached; any step other than search, save, or done makes the while loop at line 2 spin forever without awaiting.",
           "files": ["workflow.diff"],
           "rubric": [
-            "Uses the four review sections from the agent instructions",
+            "Uses the four sections: Critical Issues (Must Fix), Important Improvements, Security Risks, Minor Suggestions",
             "Identifies the self-loop that prevents save",
             "Identifies unknown or invalid state failure behavior",
             "Cites workflow.py with line-level evidence"
@@ -184,7 +188,7 @@
         {
           "id": "code-reviewer-validation-no-fabricated-coverage",
           "prompt": "Review validation.diff. Its contract accepts only integer numbers from 1 to 100, with no coercion. Report actual defects, not speculative application requirements. Do not modify code.",
-          "expected": "Four sections, no manufactured must-fix issue, recognize strict numeric validation and boundary tests.",
+          "expected": "Four sections, no manufactured must-fix issue, recognize strict numeric validation and boundary tests. quantity.py line 2 rejects non-int types (including bool, via type(value) is not int) and values outside 1-100; test_quantity.py checks valid values 1, 50, 100 and invalid values 0, 101, -1, 1.5, nan, inf, \"2\", None, and True.",
           "files": ["validation.diff"],
           "heuristics": [
             {
@@ -194,7 +198,7 @@
             }
           ],
           "rubric": [
-            "Uses the four review sections from the agent instructions",
+            "Uses the four sections: Critical Issues (Must Fix), Important Improvements, Security Risks, Minor Suggestions",
             "Reports no must-fix critical defect in this change",
             "Recognizes strict integer validation and boundary tests",
             "Does not invent coverage percentages"

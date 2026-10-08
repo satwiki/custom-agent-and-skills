@@ -18,25 +18,23 @@ def _client() -> AzureOpenAI | OpenAI:
     version = os.environ.get("EVAL_API_VERSION", "").strip()
     if "/openai/v1" in endpoint or not version:
         return OpenAI(api_key=key, base_url=endpoint, timeout=timeout)
-    return AzureOpenAI(
-        azure_endpoint=endpoint,
-        api_key=key,
-        api_version=version,
-        timeout=timeout,
-    )
+    else:
+        return AzureOpenAI(
+            azure_endpoint=endpoint,
+            api_key=key,
+            api_version=version,
+            timeout=timeout,
+        )
 
 
 def complete(messages: list[dict[str, str]]) -> dict:
     """Return {text, error, duration_ms, input_tokens, output_tokens}."""
     started = time.perf_counter()
-    try:
-        response = _client().chat.completions.create(
-            model=os.environ["EVAL_MODEL"],
-            messages=messages,
-            temperature=0,
-        )
-    except Exception as error:
-        return _empty(started, str(error))
+    response = _client().chat.completions.create(
+        model=os.environ["EVAL_MODEL"],
+        messages=messages,
+        temperature=0,
+    )
     duration_ms = int((time.perf_counter() - started) * 1000)
     choice = response.choices[0] if response.choices else None
     content = choice.message.content if choice and choice.message else None
@@ -64,13 +62,3 @@ def parse_judge(text: str) -> list[dict]:
         raise ValueError("Judge JSON must contain an items array")
     return items
 
-
-def _empty(started: float, error: str) -> dict:
-    """Empty chat result used when the HTTP call fails."""
-    return {
-        "text": "",
-        "error": error,
-        "duration_ms": int((time.perf_counter() - started) * 1000),
-        "input_tokens": None,
-        "output_tokens": None,
-    }

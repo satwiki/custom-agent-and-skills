@@ -46,6 +46,10 @@ def load_suite(root: Path) -> dict:
         target["instructions"] = instruction_body(path.read_text(encoding="utf-8"))
         if not target["instructions"]:
             raise ValueError(f"Empty instructions: {name}")
+        # judge notes provide target-specific instructions
+        notes = target.get("judge_notes", None)
+        if notes is not None and (not isinstance(notes, str) or not notes.strip()):
+            raise ValueError(f"judge_notes must be a non-empty string: {name}")
         for case in target["cases"]:
             case_id = case["id"]
             if case_id in ids:

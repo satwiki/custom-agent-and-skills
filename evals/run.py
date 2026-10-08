@@ -33,6 +33,9 @@ JUDGE_SYSTEM = (
     "You are a strict grader. Score the assistant answer against each rubric item. "
     "Pass only when the answer contains concrete substance that satisfies the item. "
     "A heading, keyword, or label without substance is a fail. Quote evidence. "
+    "The supplied files are ground truth: use them to judge whether the answer invents "
+    "anything absent from the input and whether citations match. File lines are numbered "
+    "from 1; the answer may cite a single line or a range. "
     'Return JSON only: {"items":[{"text":"<rubric item>","pass":true,"evidence":"<quote>"}]}'
 )
 
@@ -64,16 +67,28 @@ def generation_messages(target: dict, case: dict, arm: str, files: dict[str, str
     return [{"role": "system", "content": system}, {"role": "user", "content": "\n".join(parts)}]
 
 
-def judge_messages(case: dict, answer: str) -> list[dict[str, str]]:
-    """Build judge messages with prompt, expected, rubric, and the answer."""
+def judge_system(target: dict) -> str:
+    """Shared judge rules plus optional target-specific judge notes."""
+    notes = target.get("judge_notes")
+    return f"{JUDGE_SYSTEM}\n\nTarget-specific grading notes:\n{notes}" if notes else JUDGE_SYSTEM
+
+
+def judge_messages(target: dict, case: dict, answer: str, files: dict[str, str]) -> list[dict[str, str]]:
+    """Build judge messages with prompt, expected, rubric, line-numbered files, and the answer."""
     numbered = "\n".join(f"{i + 1}. {item}" for i, item in enumerate(case["rubric"]))
+    hidden = case.get("redact") or []
+    parts = ["Supplied files:"]
+    for name, content in files.items():
+        lines = redact(content, hidden).splitlines()
+        parts.extend(["", f"## {name}", "```", *(f"{n}: {line}" for n, line in enumerate(lines, 1)), "```"])
     user = (
         f"Task prompt:\n{case['prompt']}\n\n"
         f"What success looks like:\n{case['expected']}\n\n"
         f"Rubric:\n{numbered}\n\n"
-        f"Assistant answer:\n{answer}"
+        + "\n".join(parts)
+        + f"\n\nAssistant answer:\n{answer}"
     )
-    return [{"role": "system", "content": JUDGE_SYSTEM}, {"role": "user", "content": user}]
+    return [{"role": "system", "content": judge_system(target)}, {"role": "user", "content": user}]
 
 
 def hidden_values(case: dict) -> list[str]:
@@ -116,7 +131,9 @@ def run(args: argparse.Namespace, *, root: Path = ROOT, complete_fn=complete) ->
                 score = ""
                 if not judge_error and generated["text"].strip():
                     judged = complete_fn(
-                        judge_messages(case, redact(generated["text"], case.get("redact") or []))
+                        judge_messages(
+                            target, case, redact(generated["text"], case.get("redact") or []), files
+                        )
                     )
                     if judged["error"]:
                         judge_error = judged["error"]

@@ -10,8 +10,10 @@ environment variables, and CLI usage live in the
 
 * Heuristics are local regex gates (`matches`, `not_matches`, `contains_all`) plus a built-in nonempty check on every answer. Use them for canaries and invented IDs, not for writing quality.
 * Rubric items are scored by the judge. A keyword or heading without substance is a fail.
+* The judge receives the case prompt, `expected`, rubric, the fixture files with 1-based line numbers (with `redact` values removed), and the answer. Put source facts that the judge must verify, such as PR numbers or file line numbers, in `expected`.
+* Optional target-level `judge_notes` adds grading rules for that skill or agent to the judge system prompt. For example, repo-visualizer notes say that a Mermaid subgraph is not a separate diagram, and code-reviewer notes name the four required sections.
 
-Gold expected text and rubric lines are not sent to the subject model.
+Gold expected text, rubric lines, and judge notes are not sent to the subject model.
 
 Every case always fails if the answer is empty. Extra gates, when present:
 

@@ -2,7 +2,7 @@ diff --git a/quantity.py b/quantity.py
 new file mode 100644
 --- /dev/null
 +++ b/quantity.py
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,4 @@
 +def validate_quantity(value):
 +    if type(value) is not int or value < 1 or value > 100:
 +        raise ValueError("quantity must be an integer from 1 to 100")
