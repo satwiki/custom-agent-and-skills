@@ -1,0 +1,4 @@
+openai
+pytest
+ruff
+python-dotenv

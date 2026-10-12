@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local agent evaluations
+evals/results/
+
+# Leftover dependencies from the former Node harness
+node_modules/

@@ -1,0 +1,30 @@
+{
+  "version": "2.0",
+  "merged_pull_requests": [
+    {
+      "number": 101,
+      "title": "Add CSV export",
+      "description": "Users can export the current filtered report to CSV.",
+      "category": "feature"
+    },
+    {
+      "number": 102,
+      "title": "Fix duplicate invoice emails",
+      "description": "Retrying an invoice request no longer sends duplicate emails.",
+      "category": "fix"
+    },
+    {
+      "number": 103,
+      "title": "Refresh development dependencies",
+      "description": "Update test tooling. No runtime behavior change.",
+      "category": "maintenance"
+    },
+    {
+      "number": 104,
+      "title": "Replace the v1 export endpoint",
+      "description": "BREAKING: Remove /v1/export. Clients must use /v2/exports and rename the query field format to file_type. Existing API tokens remain valid.",
+      "category": "feature",
+      "breaking": true
+    }
+  ]
+}
